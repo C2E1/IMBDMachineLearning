@@ -33,4 +33,41 @@ ggplot(ratings, aes(x = M, xmin = M-SE, xmax = M+SE, y = director_name )) +
   theme(axis.text=element_text(size=8)) +
   xlab("Gross") + ylab("Director")
 
+# first we use plyr to calculate the mean rating and SE for each main actor
+ratingdat <- ddply(df, c("actor_1_name"), summarise,
+                   M = mean(imdb_score, na.rm=T),
+                   SE = sd(imdb_score, na.rm=T)/sqrt(length(na.omit(imdb_score))),
+                   N = length(na.omit(imdb_score)))
+ratings<-ratingdat[which(ratingdat$N>=15),]
+
+# make actor into an ordered factor, ordering by mean rating:
+ratings$actor_1_name <- factor(ratings$actor_1_name)
+ratings$actor_1_name <- reorder(ratings$actor_1_name, ratings$M)
+
+ggplot(ratings, aes(x = M, xmin = M-SE, xmax = M+SE, y = actor_1_name )) +
+  geom_point() + 
+  geom_segment( aes(x = M-SE, xend = M+SE,
+                    y = actor_1_name, yend=actor_1_name)) +
+  theme(axis.text=element_text(size=8)) +
+  xlab("Mean rating") + ylab("First Actor") 
+
+
+# then we use plyr to calculate the mean rating and SE for each director
+ratingdat <- ddply(df, c("director_name"), summarise,
+                   M = mean(imdb_score, na.rm=T),
+                   SE = sd(imdb_score, na.rm=T)/sqrt(length(na.omit(imdb_score))),
+                   N = length(na.omit(imdb_score)))
+ratings<-ratingdat[which(ratingdat$N>=10 & !(ratingdat$director_name=='')),]
+
+# make director into an ordered factor, ordering by mean rating:
+ratings$director_name <- factor(ratings$director_name)
+ratings$director_name <- reorder(ratings$director_name, ratings$M)
+
+ggplot(ratings, aes(x = M, xmin = M-SE, xmax = M+SE, y = director_name )) +
+  geom_point() + 
+  geom_segment( aes(x = M-SE, xend = M+SE,
+                    y = director_name, yend=director_name)) +
+  theme(axis.text=element_text(size=8)) +
+  xlab("Mean rating") + ylab("Director") 
+
 
