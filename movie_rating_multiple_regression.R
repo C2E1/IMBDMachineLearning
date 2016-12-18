@@ -4,7 +4,7 @@ view_model = function(model) {
   par(mfrow=c(1,1)) # Change back to 1 x 1
 }
 movies = read.csv("movie_metadata.csv")
-movies = subset(movies, country == "USA")
+ms = subset(movies, country == "USA")
 ms = na.omit(movies) #Take out empty data
 ms$Colord[ms$color == "Color"] = 1 #Color dummy variable
 ms$Colord[ms$color != "Color"] = 0
@@ -19,16 +19,13 @@ msp = ms[, c("imdb_score",
                                         "Colord",
                                         "budget")]
 
-
-model.saturated = lm(imdb_score ~ .-actor_3_facebook_likes, data = msp) # actor3 not statistically significant
-summary(model.saturated)
 plot(model.saturated) #not normal based on normal QQ
 model.empty = lm(imdb_score ~ 1, data = msp) #The model with an intercept ONLY.
 model.full = lm(imdb_score ~ ., data = msp) #The model with ALL variables
 scope = list(lower = formula(model.empty), upper = formula(model.full))
 forwardAIC = step(model.empty, scope, direction = "forward", k = 2)
 summary(forwardAIC) #step regression take out actor 3
-view_model(forwardAIC)
+view_model(forwardAIC) # normality bot satisfied
 confint(forwardAIC)
 bc = boxCox(forwardAIC)
 lambda = bc$x[which(bc$y == max(bc$y))] # Extracting the best lambda value
